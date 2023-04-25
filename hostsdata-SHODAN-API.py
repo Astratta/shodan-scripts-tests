@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-hostnames = ["chamados.yssy.com.br", "google.com"]
+hostnames = ["facebook.com", "google.com"]
 
 KEY = os.getenv("API-KEY")
 baseURL = "https://api.shodan.io"
@@ -33,7 +33,7 @@ def getDomainIp(domains): ## Método retorna uma lista de IPs recebendo uma list
 ips = getDomainIp(hostnames)
 
 endpoint = "/shodan/host/"
-finalURL = "{baseURL}{endpoint}{ip}?key={KEY}".format(baseURL=baseURL, endpoint=endpoint, ip='208.109.63.167', KEY=KEY)
+finalURL = "{baseURL}{endpoint}{ip}?key={KEY}".format(baseURL=baseURL, endpoint=endpoint, ip=ips[hostnames[0]], KEY=KEY)
 
 try:
     results = requests.get(finalURL)

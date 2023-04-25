@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-hostnames = ["cadastrobwa.yssy.com.br", "google.com"]
+hostnames = ["facebook.com", "google.com"]
 
 KEY = os.getenv("API-KEY")
 
@@ -34,7 +34,7 @@ ips = getDomainIp(hostnames)
 #print(ips)
 
 baseURL = "https://internetdb.shodan.io/"
-ip='208.109.63.167' #ips[hostnames[0]]
+ip=ips[hostnames[0]]
 finalURL = "{baseURL}{ip}".format(baseURL = baseURL, ip = ip)
 
 
