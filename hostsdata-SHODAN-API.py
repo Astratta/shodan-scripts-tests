@@ -6,6 +6,7 @@
 import os
 import json
 import requests
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,23 +26,43 @@ def getDomainIp(domains): ## Método retorna uma lista de IPs recebendo uma list
     try:
         results = requests.get(finalURL)
         results.raise_for_status()
-        return results.json()
+        return list(results.json().values())
     except requests.exceptions.HTTPError as exception:
         raise SystemError(exception)
 
+def getIpData(ip):
+    endpoint = "/shodan/host/"
+    finalURL = "{baseURL}{endpoint}{ip}?key={KEY}".format(baseURL=baseURL, endpoint=endpoint, ip=ip, KEY=KEY)
+
+    try:
+        results = requests.get(finalURL)
+        results.raise_for_status()
+        rawdata = results.json()
+        datetimeObj = datetime.strptime(rawdata["last_update"], "%Y-%m-%dT%H:%M:%S.%f")
+        rawdata["last_update"] = datetimeObj.strftime("%d/%m/%Y")
+        return rawdata
+    except requests.exceptions.HTTPError as exception:
+        raise SystemError(exception)
 
 ips = getDomainIp(hostnames)
 
-endpoint = "/shodan/host/"
-finalURL = "{baseURL}{endpoint}{ip}?key={KEY}".format(baseURL=baseURL, endpoint=endpoint, ip=ips[hostnames[0]], KEY=KEY)
+rawdata = getIpData("xxxxxxxxxx")
 
-try:
-    results = requests.get(finalURL)
-    results.raise_for_status()
-    with open("jsonData-API.json", 'w', encoding="utf-8") as file:
-        file.write(json.dumps(results.json(), sort_keys=True, ensure_ascii=False ,indent=3))
-except requests.exceptions.HTTPError as exception:
-    raise SystemError(exception)
+genKeys = ["last_update", "ip_str", "hostnames", "ports", "vulns"]
+
+for k in genKeys:
+    if k in rawdata.keys():
+        if type(rawdata[k]) is list:
+            print("{k}: {valores}\n".format(k=k, valores=", ".join([str(valor) for valor in rawdata[k]])))
+        else:
+            print("{}: {}\n".format(k, rawdata[k]))
+
+
+
+
+
+
+
 
 
 
