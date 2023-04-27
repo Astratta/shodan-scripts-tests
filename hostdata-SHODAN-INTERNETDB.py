@@ -2,6 +2,8 @@
 ## Library do Shodan para Python não cobre essa API.
 ## Documentação da API: https://internetdb.shodan.io/
 
+## Esse script será descontinuado, usar a API normal é mais vantajoso
+
 import os
 import json
 import requests
