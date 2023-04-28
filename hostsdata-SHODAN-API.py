@@ -83,7 +83,7 @@ def filterIpServiceData(rawdata): ## Filtra informações de cada serviço possi
                     data["data"][-1][k] = None
 
 #ips = getDomainIp(hostnames)
-rawdata = getIpData("208.109.63.167") ## Pega informação completa
+rawdata = getIpData("xxxxxxxxxx") ## Pega informação completa
 filterIpGenData(rawdata)              ## Filtra informações gerais
 data["data"] = []
 filterIpServiceData(rawdata)          ## Filtra informações sobre os serviços vulneráveis
