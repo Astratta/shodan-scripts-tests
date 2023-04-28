@@ -1,4 +1,4 @@
-## Script que extrai informações de determinado IP através da API do Shodan.
+## Script que extrai informações de várias listas de IPs através da API do Shodan.
 ## O script utiliza endpoins gratuitos por enquanto.
 ## Aqui não faço uso da library shodan do python para que o script possa funcionar em qualquer plataforma.
 ## Documentação da API: https://developer.shodan.io/api
@@ -11,13 +11,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-data = {}
-hostnames = ["facebook.com", "google.com"]
-
 KEY = os.getenv("API-KEY")
 baseURL = "https://api.shodan.io"
 
-def getDomainIp(domains): ## Método retorna uma lista de IPs recebendo uma lista de domínios como argumento 
+'''def getDomainIp(domains): ## Método retorna uma lista de IPs recebendo uma lista de domínios como argumento 
     endpoint = "/dns/resolve?"
     finalURL = "{baseURL}{endpoint}hostnames={hostnames}&key={KEY}".format(baseURL=baseURL, 
                                                                            endpoint=endpoint, 
@@ -29,7 +26,7 @@ def getDomainIp(domains): ## Método retorna uma lista de IPs recebendo uma list
         results.raise_for_status()
         return list(results.json().values())
     except requests.exceptions.HTTPError as exception:
-        raise SystemError(exception)
+        raise SystemError(exception)'''
 
 def getIpData(ip): ## Método que retorna todas as informações de um IP
     endpoint = "/shodan/host/"
@@ -45,52 +42,59 @@ def getIpData(ip): ## Método que retorna todas as informações de um IP
     except requests.exceptions.HTTPError as exception:
         raise SystemError(exception)
 
-def filterIpGenData(rawdata): ## Filtra as informações gerais sobre um IP
+def filterData(rawdata):
+    ipData = {}
     genKeys = ["last_update", "ip_str", "hostnames", "ports", "vulns"]
 
     for k in genKeys:
         if k in rawdata.keys():
-            data[k]=rawdata[k]
-            '''if type(rawdata[k]) is list:
-                print("{k}: {valores}\n".format(k=k, valores=", ".join([str(valor) for valor in rawdata[k]])))
-            else:
-                print("{}: {}\n".format(k, rawdata[k]))'''
+            ipData[k]=rawdata[k]
         else:
-            data[k] = None
+            ipData[k] = None
+    
+    return filterIpServiceData(rawdata, ipData)
 
-def filterIpServiceData(rawdata): ## Filtra informações de cada serviço possivelmente vulnerável por IP
-    genKeys = ["product", "version", "port", "vulns"]
+def filterIpServiceData(rawdata, ipData): ## Filtra informações de cada serviço possivelmente vulnerável por IP
+    if ipData["vulns"] is None:
+        return ipData
+    else:
+        ipData["data"] = []
+        genKeys = ["product", "version", "port", "vulns"]
 
-    for i in range(len(rawdata["data"])):
-        if "vulns" in rawdata["data"][i].keys():
-            data["data"].append({})
-            for k in genKeys:
-                if k in rawdata["data"][i].keys():
-                    data["data"][-1][k] = rawdata["data"][i][k]
-                    '''if k in rawdata["data"][i].keys():
-                        if type(rawdata["data"][i][k]) is dict:
-                            for cve in list(rawdata["data"][i][k].keys()):
-                                print(cve+": ")
-                                for key, info in rawdata["data"][i][k][cve].items():
-                                    if key != "references":
-                                        print("{}: {}".format(key, info))
-                                print()
-                        else:
-                            print("{}: {}\n".format(k, rawdata["data"][i][k]))
+        for i in range(len(rawdata["data"])):
+            if "vulns" in rawdata["data"][i].keys():
+                ipData["data"].append({})
+                for k in genKeys:
+                    if k in rawdata["data"][i].keys():
+                        ipData["data"][-1][k] = rawdata["data"][i][k]
                     else:
-                        print("{}: null\n".format(k))'''
-                else:
-                    data["data"][-1][k] = None
+                        ipData["data"][-1][k] = None
+        
+        return ipData
 
-#ips = getDomainIp(hostnames)
-rawdata = getIpData("xxxxxxxxxx") ## Pega informação completa
-filterIpGenData(rawdata)              ## Filtra informações gerais
-data["data"] = []
-filterIpServiceData(rawdata)          ## Filtra informações sobre os serviços vulneráveis
+def buildData(ips, ipsData): 
+    if len(ips) < 1:
+        return ipsData ## Retorna todos os dados depois que todos os IPs forem processados
+    else:
+        rawdata = getIpData(ips[-1]) ## Pega informação completa
+        ipData = filterData(rawdata) ## Filtra informações mais relevantes
+        ipsData[ipData["ip_str"]] = ipData ## Coloca as informações no dicioário
+        ips.pop() ## Deleta o último item para poder ler um novo
+        return buildData(ips, ipsData) ## Processa outro dado
+
+data = {"data": []}
+orgs = ["Meta", "Google"]
+
+for o in orgs:
+    with open("IPs-"+o+".txt", "r") as file: ## Nome do arquivo deve ser IPs-ORG.txt
+        ips = file.readlines() #Lê um arquivo com IPs, um IP por linha
+
+    data["data"].append({"org": o})
+    data["data"][-1]["ips"] = buildData(ips, ipsData = {})
 
 ## Exporta os dados em JSON
 with open("ipData.json", 'w', encoding="utf-8") as file:
-    file.write(json.dumps(data, ensure_ascii=False ,indent=3))
+    file.write(json.dumps(data, ensure_ascii=False ,indent=4))
 
 
 
