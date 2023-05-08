@@ -23,7 +23,7 @@ orgs = ["XXXX, YYYYY, ZZZZZ"]
 for o in orgs:
     with open("IPs-"+o+".txt", "r") as file: ## Nome do arquivo deve ser IPs-ORG.txt
         for address in file.readlines():
-            address = address.replace("\n", "")
+            address = address.replace("\n", "") ## Retira os '\n' lido do arquivo
             if "/" in address: ## Checa se é um ip ou um netblock
                 addresses = [str(ip) for ip in ipaddress.IPv4Network(str(address))] ## Cria uma lista de IPs dado um netblock
                 for i in addresses:
