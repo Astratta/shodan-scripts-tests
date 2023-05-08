@@ -106,12 +106,3 @@ def buildData(ips, ipsData):
         return list(results.json().values())
     except requests.exceptions.HTTPError as exception:
         raise SystemError(exception)'''
-
-
-
-
-
-
-
-
-
