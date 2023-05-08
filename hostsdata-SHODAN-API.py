@@ -47,9 +47,7 @@ def getIpData(ip): ## Método que retorna todas as informações de um IP
     if results.status_code == "200":
         datetimeObj = datetime.strptime(rawdata["last_update"], "%Y-%m-%dT%H:%M:%S.%f")
         rawdata["last_update"] = datetimeObj.strftime("%d/%m/%Y")
-        return rawdata
-    else:
-        return rawdata
+    return rawdata
 
 def filterData(rawdata):
     if "error" in rawdata.keys():
