@@ -18,25 +18,7 @@ baseURL = "https://api.shodan.io"
 
 ips = []
 data = {"data": []}
-orgs = ["XXXX, YYYYY, ZZZZZ"]
-
-for o in orgs:
-    with open("IPs-"+o+".txt", "r") as file: ## Nome do arquivo deve ser IPs-ORG.txt
-        for address in file.readlines():
-            address = address.replace("\n", "") ## Retira os '\n' lido do arquivo
-            if "/" in address: ## Checa se é um ip ou um netblock
-                addresses = [str(ip) for ip in ipaddress.IPv4Network(str(address))] ## Cria uma lista de IPs dado um netblock
-                for i in addresses:
-                    ips.append(i) ## Adiciona os IPs na lista geral
-            else:
-                ips.append(address) ## Adiciona o IP na lista geral
-
-    data["data"].append({"org": o})
-    data["data"][-1]["ips"] = buildData(ips, ipsData = {})
-
-## Exporta os dados em JSON
-with open("ipData.json", 'w', encoding="utf-8") as file:
-    file.write(json.dumps(data, ensure_ascii=False ,indent=4))
+orgs = ["Grupo SBF"]
 
 def getIpData(ip): ## Método que retorna todas as informações de um IP
     endpoint = "/shodan/host/"
@@ -106,3 +88,21 @@ def buildData(ips, ipsData):
         return list(results.json().values())
     except requests.exceptions.HTTPError as exception:
         raise SystemError(exception)'''
+
+for o in orgs:
+    with open("IPs-"+o+".txt", "r") as file: ## Nome do arquivo deve ser IPs-ORG.txt
+        for address in file.readlines():
+            address = address.replace("\n", "") ## Retira os '\n' lido do arquivo
+            if "/" in address: ## Checa se é um ip ou um netblock
+                addresses = [str(ip) for ip in ipaddress.IPv4Network(str(address))] ## Cria uma lista de IPs dado um netblock
+                for i in addresses:
+                    ips.append(i) ## Adiciona os IPs na lista geral
+            else:
+                ips.append(address) ## Adiciona o IP na lista geral
+
+    data["data"].append({"org": o})
+    data["data"][-1]["ips"] = buildData(ips, ipsData = {})
+
+## Exporta os dados em JSON
+with open("ipData.json", 'w', encoding="utf-8") as file:
+    file.write(json.dumps(data, ensure_ascii=False ,indent=4))
