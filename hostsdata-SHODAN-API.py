@@ -18,7 +18,7 @@ baseURL = "https://api.shodan.io"
 
 ips = []
 data = {"data": []}
-orgs = ["Grupo SBF"]
+orgs = ["Google"]
 
 def getIpData(ip): ## Método que retorna todas as informações de um IP
     endpoint = "/shodan/host/"
@@ -50,17 +50,24 @@ def filterIpServiceData(rawdata, ipData): ## Filtra informações de cada servi�
     if ipData["vulns"] is None:
         return ipData
     else:
-        ipData["data"] = []
+        ipData["vulns_details"] = []
         genKeys = ["product", "version", "port", "vulns"]
 
         for i in range(len(rawdata["data"])):
             if "vulns" in rawdata["data"][i].keys():
-                ipData["data"].append({})
+                ipData["vulns_details"].append({})
                 for k in genKeys:
                     if k in rawdata["data"][i].keys():
-                        ipData["data"][-1][k] = rawdata["data"][i][k]
+                        ipData["vulns_details"][-1][k] = rawdata["data"][i][k]
                     else:
-                        ipData["data"][-1][k] = None
+                        ipData["vulns_details"][-1][k] = None
+                '''for cve in ipData["vulns_details"][-1]["vulns"].keys():
+                    try:
+                        r = requests.get(f"https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={cve}")
+                        score = r.json()["vulnerabilities"][0]["cve"]["metrics"]["cvssMetricV31"][0]["cvssData"]["baseScore"]
+                        ipData["vulns_details"][-1]["vulns"][cve]["cvss"] = score
+                    except Exception as e:
+                        print(e)'''
         
         return ipData
 
